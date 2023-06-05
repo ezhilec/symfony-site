@@ -1,2 +1,2 @@
-create database symfony-site;
-use symfony-site;
+create database symfony_site;
+use symfony_site;
