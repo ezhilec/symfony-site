@@ -1,0 +1,11 @@
+@import "node_modules/bootstrap/scss/bootstrap";
+
+$background-color: #ffffff;
+
+body {
+    background-color: $background-color;
+}
+
+.content {
+    margin-top: 100px;
+}
