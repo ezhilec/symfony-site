@@ -15,10 +15,10 @@ class PageController extends AbstractController
         private PageRepository $pageRepository
     ) {}
     
-    #[Route('/{code}', name: 'pages', defaults: ['code' => ''], methods: ['GET', 'HEAD'], priority: 0)]
-    public function index(string $code): Response
+    #[Route('/{slug}', name: 'pages', defaults: ['slug' => ''], methods: ['GET', 'HEAD'], priority: 0)]
+    public function index(string $slug): Response
     {
-        $page = $this->pageRepository->findOneBy(['slug' => $code]);
+        $page = $this->pageRepository->findOneBy(['slug' => $slug]);
         
         if (!$page) {
             throw $this->createNotFoundException('Page not found');

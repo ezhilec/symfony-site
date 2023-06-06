@@ -28,16 +28,28 @@
                     {% set menuPages = getMenuPages() %}
                     {% for menuPage in menuPages %}
                         <li class="nav-item">
-                            <a class="nav-link {{ page.slug == menuPage.slug ? 'active' : '' }}" href="/{{ menuPage.slug }}">
+                            <a class="nav-link {{ page is defined and page.slug == menuPage.slug ? 'active' : '' }}"
+                               href="{{ url('pages', {'slug': menuPage.slug}) }}"
+                            >
                                 {{ menuPage.name }}
                             </a>
                         </li>
                     {% endfor %}
                 </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
+                <div class="d-flex">
+                    {% if app.user %}
+                        <div class="navbar-text me-4">
+                            Hello, {{ app.user.name }}
+                        </div>
+                        <a class="btn btn-outline-secondary" href="{{ url('app_logout') }}">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a class="btn btn-outline-primary" href="{{ url('app_login') }}">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
