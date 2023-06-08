@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Frontend;
 
-use App\Entity\Page;
 use App\Repository\PageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -15,7 +13,7 @@ class PageController extends AbstractController
         private PageRepository $pageRepository
     ) {}
     
-    #[Route('/{slug}', name: 'pages', defaults: ['slug' => ''], methods: ['GET', 'HEAD'], priority: 0)]
+    #[Route('/{slug}', name: 'app_page_show', defaults: ['slug' => ''], methods: ['GET', 'HEAD'], priority: 0)]
     public function index(string $slug): Response
     {
         $page = $this->pageRepository->findOneBy(['slug' => $slug]);
@@ -24,14 +22,8 @@ class PageController extends AbstractController
             throw $this->createNotFoundException('Page not found');
         }
         
-        return $this->render('front/page/index.html.twig', [
+        return $this->render('frontend/page/index.html.twig', [
             'page' => $page,
         ]);
-    }
-    
-    #[Route('/catalog', name: 'catalog', methods: ['GET', 'HEAD'], priority: 1)]
-    public function catalog(): Response
-    {
-        dd(123);
     }
 }

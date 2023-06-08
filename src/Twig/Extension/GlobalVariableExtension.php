@@ -13,6 +13,8 @@ class GlobalVariableExtension extends AbstractExtension
     {
         return [
             new TwigFunction('getMenuPages', [GlobalVariableExtensionRuntime::class, 'getMenuPages']),
+            new TwigFunction('getAdminPages', [GlobalVariableExtensionRuntime::class, 'getAdminPages']),
+            new TwigFunction('getUploadsDir', [GlobalVariableExtensionRuntime::class, 'getUploadsDir']),
         ];
     }
 }

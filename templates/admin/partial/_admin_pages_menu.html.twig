@@ -1,0 +1,23 @@
+{% set menuPages = getAdminPages() %}
+<ul>
+    {% for page in menuPages %}
+        <li>
+            <a href="{{ page.route ? path(page.route) : "#" }}">
+                <i class="{{ page.icon }}"></i>
+                {{ page.name }}
+            </a>
+            {% if page.children is defined %}
+                <ul>
+                    {% for child in page.children %}
+                        <li>
+                            <a href="{{ child.route ? path(child.route) : "#" }}">
+                                <i class="{{ child.icon }}"></i>
+                                {{ child.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
