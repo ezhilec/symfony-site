@@ -8,18 +8,18 @@ return [
         'children' => [
             [
                 'name' => 'Pages',
-                'icon' => '',
+                'icon' => 'bi bi-file-earmark',
                 'route' => 'app_admin_page_index',
             ],
             [
-                'name' => 'Products',
-                'icon' => '',
-                'route' => '',
+                'name' => 'Product categories',
+                'icon' => 'bi bi-diagram-3',
+                'route' => 'app_admin_product_category_index',
             ],
             [
-                'name' => 'Product categories',
-                'icon' => '',
-                'route' => 'app_admin_product_category_index',
+                'name' => 'Products',
+                'icon' => 'bi bi-box-seam',
+                'route' => 'app_admin_product_index',
             ],
         ],
     ],
