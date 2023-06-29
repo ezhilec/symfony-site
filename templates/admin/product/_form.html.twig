@@ -1,4 +1,20 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+
+{{ form_row(form.name) }}
+{{ form_row(form.reference_number) }}
+{{ form_row(form.category) }}
+
+<div data-controller="dropzone"
+     data-dropzone-url-value="{{ path('app_admin_product_new') }}"
+     data-dropzone-maxfilesize-value="{{ maxFilesize }}"
+     data-dropzone-maxfiles-value="{{ maxFiles }}"
+     data-dropzone-existingfiles-value="{{ existingFiles|json_encode }}"
+>
+    <div class="d-none">{{ form_row(form.images, { attr: { id: "product_images", "data-dropzone-target": "imagesInput" } }) }}</div>
+    <div class="dropzone" id="images_dropzone" data-dropzone-target="dropzone"></div>
+    <input type="hidden" name="images_to_delete" id="images_to_delete" value="" data-dropzone-target="imagesToDeleteInput">
+</div>
+
+<button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+
 {{ form_end(form) }}

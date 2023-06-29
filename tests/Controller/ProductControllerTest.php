@@ -2,14 +2,17 @@
 
 namespace Controller;
 
+use App\Entity\Image;
 use App\Entity\Product;
 use App\Entity\ProductCategory;
+use App\Entity\ProductImage;
 use App\Entity\User;
 use App\Repository\ProductRepository;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ProductControllerTest extends WebTestCase
 {
@@ -84,8 +87,10 @@ class ProductControllerTest extends WebTestCase
             'product[reference_number]' => 'Testing',
             'product[category]' => $this->category->getId(),
         ]);
+    
+        $product = $this->repository->findOneBy(['name' => 'Testing'], ['id' => 'DESC']);
         
-        self::assertResponseRedirects('/admin/product/');
+        self::assertResponseRedirects('/admin/product/' . $product->getId() . '/edit');
         
         self::assertSame($originalNumObjectsInRepository + 1, count($this->repository->findAll()));
     }
@@ -150,5 +155,102 @@ class ProductControllerTest extends WebTestCase
         
         self::assertSame($originalNumObjectsInRepository, count($this->repository->findAll()));
         self::assertResponseRedirects('/admin/product/');
+    }
+    
+    public function testImageUpload(): void
+    {
+        $fixture = new Product();
+        $fixture->setName('My Title');
+        $fixture->setReferenceNumber('My Title');
+        $fixture->setCategory($this->category);
+    
+        $this->repository->save($fixture, true);
+    
+        $this->client->loginUser($this->adminUser);
+    
+        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
+        
+        $file = new UploadedFile(
+            __DIR__ . '/../fixtures/photo_small.jpeg',
+            'photo_small.jpeg',
+            'image/jpeg',
+            null,
+            true
+        );
+    
+        $this->client->submitForm('Update', [
+            'product[name]' => 'Something New',
+            'product[reference_number]' => 'Something New',
+            'product[category]' => $this->category->getId(),
+            'product[images][0]' => $file
+        ]);
+        
+        $this->client->followRedirect();
+        $this->assertResponseIsSuccessful();
+        
+        $imageRepository = $this->entityManager->getRepository(Image::class);
+    
+        $image = $imageRepository->createQueryBuilder('image')
+            ->andWhere('image INSTANCE OF ' . ProductImage::class)
+            ->andWhere('image.imageable_id = :imageable_id')
+            ->setParameter('imageable_id', $fixture->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $this->assertInstanceOf(Image::class, $image);
+        
+        $photoDirectory = $this->client->getContainer()->getParameter('upload_directory');
+        $uploadedFile = sprintf('%s/%s', $photoDirectory, $image->getUrl());
+        $uploadedPreviewFile = sprintf('%s/%s', $photoDirectory, $image->getPreviewUrl());
+
+        $this->assertTrue(file_exists($uploadedFile));
+        $this->assertTrue(file_exists($uploadedPreviewFile));
+        
+        unlink($uploadedFile);
+        unlink($uploadedPreviewFile);
+        $this->entityManager->remove($image);
+        $this->entityManager->flush();
+    }
+    
+    public function testImageDeletion(): void
+    {
+        $fixture = new Product();
+        $fixture->setName('My Title');
+        $fixture->setReferenceNumber('My Title');
+        $fixture->setCategory($this->category);
+        
+        $this->entityManager->persist($fixture);
+        $this->entityManager->flush();
+        
+        $sourceFilePath = __DIR__ . '/../fixtures/photo_small.jpeg';
+        $targetFileName = 'photo_small.jpg';
+        $photoDirectory = $this->client->getContainer()->getParameter('upload_directory');
+        $targetFilePath = $photoDirectory . '/' . $targetFileName;
+        copy($sourceFilePath, $targetFilePath);
+        
+        $image = new ProductImage();
+        $image->setUrl($targetFileName);
+        $image->setPriority(1);
+        $image->setProduct($fixture);
+        
+        $this->entityManager->persist($image);
+        $this->entityManager->flush();
+    
+        $this->client->loginUser($this->adminUser);
+
+        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
+    
+        $this->client->submitForm('Update', [
+            'product[name]' => 'Something New',
+            'product[reference_number]' => 'Something New',
+            'product[category]' => $this->category->getId(),
+            'images_to_delete' => $image->getId(),
+        ]);
+        
+        $imageRepository = $this->entityManager->getRepository(ProductImage::class);
+        $deletedImage = $imageRepository->findOneBy(['id' =>  $image->getId()]);
+        $this->assertNull($deletedImage);
+        
+        $this->assertFalse(file_exists($targetFilePath));
     }
 }

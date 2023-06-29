@@ -28,6 +28,6 @@ class GlobalVariableExtensionRuntime implements RuntimeExtensionInterface
     
     public function getUploadsDir(): string
     {
-        return str_replace("app/public/", "", $this->parameterBag->get('photo_dir')) . "/";
+        return str_replace("app/public/", "", $this->parameterBag->get('upload_directory')) . "/";
     }
 }
